@@ -21,11 +21,8 @@ class User extends Model
         'password'
     ];
 
-    protected function casts()
+    public function media()
     {
-        return [
-            'password' => 'hashed'
-        ];
-
+        return $this->morphMany(Media::class,'mediable');
     }
 }

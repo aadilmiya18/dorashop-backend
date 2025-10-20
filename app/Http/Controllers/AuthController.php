@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +20,16 @@ class AuthController extends Controller
             'mobile' => $request->mobile,
             'password' => Hash::make($request->input('password'))
         ]);
+
+        if ($request->hasFile('profile_image')) {
+            $cloudinary = new CloudinaryService();
+            $uploadedUrl = $cloudinary->upload($request->file('profile_image'));
+
+            $user->media()->create([
+                'url' => $uploadedUrl,
+                'type' => 'image'
+            ]);
+        }
 
         $token = $user->createToken('dora-shop-token')->plainTextToken;
 
