@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
@@ -16,11 +17,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logoutUser']);
 
     Route::controller(BrandController::class)->prefix('brands')->group(function () {
-        Route::get('','index');
-        Route::post('','store');
-        Route::get('/{id}','show');
-        Route::put('/{id}','update');
-        Route::delete('/{id}','destroy');
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(CategoryController::class)->prefix('categories')->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
     });
 
 });
