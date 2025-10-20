@@ -3,27 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class Brand extends Model
 {
-    use HasFactory, HasApiTokens, SoftDeletes;
-
+    use HasFactory, SoftDeletes;
     protected $fillable = [
         'name',
-        'email',
-        'mobile',
-        'password'
-    ];
-
-    protected $hidden = [
-        'password'
+        'slug',
+        'description',
+        'status',
     ];
 
     public function media()
     {
         return $this->morphMany(Media::class,'mediable');
     }
+
 }
