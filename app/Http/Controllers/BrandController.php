@@ -5,17 +5,34 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BrandRequest;
 use App\Http\Resources\BrandResource;
 use App\Models\Brand;
-use App\Services\CloudinaryService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class BrandController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $brands = Brand::query()
-            ->with('media')
-            ->get();
+        $page = $request->input('page',1);
+        $rowsPerPage = $request->input('rowsPerPage',50);
+        $sortBy = $request->input('sortBy','id');
+        $descending = $request->boolean('descending',false);
+        $filters = json_decode($request->input('filters','{}'),true);
+
+        $query = Brand::query();
+
+        if(!empty($filters['query'])) {
+            $query->queryFilter($filters['query']);
+        }
+
+        if (array_key_exists('status', $filters)) {
+            $query->statusFilter($filters['status']);
+        }
+
+        $query->orderBy($sortBy,$descending ? 'desc' : 'asc');
+
+        $brands = $query->paginate($rowsPerPage,['*'],'page', $page);
+
         return BrandResource::collection($brands);
     }
 

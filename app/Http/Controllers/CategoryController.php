@@ -6,16 +6,36 @@ use App\Http\Requests\CategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Services\CloudinaryService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::query()
-            ->with('media')
-            ->get();
+        $page = $request->input('page',1);
+        $rowsPerPage = $request->input('rowsPerPage',50);
+        $sortBy = $request->input('sortBy','id');
+        $descending = $request->boolean('descending',false);
+        $filters = json_decode($request->input('filters','{}'),true);
+
+        $query = Category::query();
+
+        if(!empty($filters['query']))
+        {
+            $query->queryFilter($filters['query']);
+        }
+
+        if(array_key_exists('status',$filters))
+        {
+            $query->statusFilter($filters['status']);
+        }
+
+        $query->orderBy($sortBy,$descending ? 'desc' : 'asc');
+
+        $categories = $query->paginate($rowsPerPage,['*'],'page',$page);
+
         return CategoryResource::collection($categories);
     }
 

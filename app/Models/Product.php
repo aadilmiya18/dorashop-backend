@@ -30,4 +30,36 @@ class Product extends Model
     {
         return $this->morphMany(Media::class,'mediable');
     }
+
+    public function scopeQueryFilter($query, $search)
+    {
+        if(!$search) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search){
+            $q->where('name','like',"%{$search}%")
+                ->orWhere('slug','like',"%{$search}%")
+                ->orWhere('sku','like', "{$search}%")
+            ;
+        });
+
+    }
+
+    public function scopeStatusFilter($query, $val)
+    {
+        if($val === null){
+            return $query;
+        }
+
+        return $query->where('status',$val);
+    }
+    public function scopeFeaturedFilter($query, $val)
+    {
+        if($val === null){
+            return $query;
+        }
+
+        return $query->where('is_featured',$val);
+    }
 }

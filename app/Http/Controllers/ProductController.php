@@ -6,15 +6,40 @@ use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Brand;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::query()
-            ->with('media')
-            ->get();
+        $page = $request->input('page',1);
+        $rowsPerPage = $request->input('rowsPerPage',50);
+        $sortBy = $request->input('sortBy','id');
+        $descending = $request->boolean('descending',false);
+        $filters = json_decode($request->input('filters','{}'),true);
+
+        $query = Product::query();
+
+        if(!empty($filters['query']))
+        {
+            $query->queryFilter($filters['query']);
+        }
+
+        if (array_key_exists('status', $filters))
+        {
+            $query->statusFilter($filters['status']);
+        }
+
+        if (array_key_exists('featured', $filters))
+        {
+            $query->featuredFilter($filters['featured']);
+        }
+
+        $query->orderBy($sortBy,$descending ? 'desc' : 'asc');
+
+        $products = $query->paginate($rowsPerPage,['*'], 'page', $page);
+
         return ProductResource::collection($products);
     }
 
