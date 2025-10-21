@@ -40,13 +40,7 @@ class BrandController extends Controller
 
 
         if ($request->hasFile('image')) {
-            $cloudinary = new CloudinaryService();
-            $uploadedUrl = $cloudinary->upload($request->file('image'));
-
-            $brand->media()->create([
-                'url' => $uploadedUrl,
-                'type' => 'image'
-            ]);
+            $brand->uploadMedia($request->file('image'));
         }
 
         return new BrandResource($brand);
@@ -73,24 +67,7 @@ class BrandController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $cloudinary = new CloudinaryService();
-            $uploadedUrl = $cloudinary->upload($request->file('image'));
-
-            if ($uploadedUrl) {
-                $media = $brand->media()->first();
-                if ($media) {
-                    $media->update([
-                        'url' => $uploadedUrl,
-                        'type' => 'image'
-                    ]);
-                } else {
-                    $brand->media()->create([
-                        'url' => $uploadedUrl,
-                        'type' => 'image'
-                    ]);
-                }
-            }
-
+            $brand->replaceMedia($request->file('image'));
         }
 
         return response()->json([
@@ -102,6 +79,7 @@ class BrandController extends Controller
     public function destroy($id)
     {
         $brand = Brand::findOrFail($id);
+        $brand->deleteMedia();
         $brand->delete();
 
         return response()->json([

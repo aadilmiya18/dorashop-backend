@@ -41,13 +41,7 @@ class CategoryController extends Controller
 
 
         if ($request->hasFile('image')) {
-            $cloudinary = new CloudinaryService();
-            $uploadedUrl = $cloudinary->upload($request->file('image'));
-
-            $category->media()->create([
-                'url' => $uploadedUrl,
-                'type' => 'image'
-            ]);
+            $category->uploadMedia($request->file('image'));
         }
 
         return new CategoryResource($category);
@@ -75,24 +69,7 @@ class CategoryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $cloudinary = new CloudinaryService();
-            $uploadedUrl = $cloudinary->upload($request->file('image'));
-
-            if ($uploadedUrl) {
-                $media = $category->media()->first();
-                if ($media) {
-                    $media->update([
-                        'url' => $uploadedUrl,
-                        'type' => 'image'
-                    ]);
-                } else {
-                    $category->media()->create([
-                        'url' => $uploadedUrl,
-                        'type' => 'image'
-                    ]);
-                }
-            }
-
+            $category->replaceMedia($request->file('image'));
         }
 
         return response()->json([
@@ -104,6 +81,7 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
+        $category->deleteMedia();
         $category->delete();
 
         return response()->json([
