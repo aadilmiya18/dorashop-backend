@@ -40,7 +40,7 @@ class BrandController extends Controller
 
 
         if ($request->hasFile('image')) {
-            $brand->uploadMedia($request->file('image'));
+            $brand->uploadMedia($request->file('image'),'image','dorashop/brands');
         }
 
         return new BrandResource($brand);
@@ -67,7 +67,7 @@ class BrandController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $brand->replaceMedia($request->file('image'));
+            $brand->replaceMedia($request->file('image'),'image','dorashop/brands');
         }
 
         return response()->json([

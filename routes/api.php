@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
@@ -25,6 +26,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::controller(CategoryController::class)->prefix('categories')->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(ProductController::class)->prefix('products')->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
         Route::get('/{id}', 'show');

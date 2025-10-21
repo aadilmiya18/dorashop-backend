@@ -41,7 +41,7 @@ class CategoryController extends Controller
 
 
         if ($request->hasFile('image')) {
-            $category->uploadMedia($request->file('image'));
+            $category->uploadMedia($request->file('image'),'image','dorashop/categories');
         }
 
         return new CategoryResource($category);
@@ -69,7 +69,7 @@ class CategoryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $category->replaceMedia($request->file('image'));
+            $category->replaceMedia($request->file('image'),'image','dorashop/categories');
         }
 
         return response()->json([
