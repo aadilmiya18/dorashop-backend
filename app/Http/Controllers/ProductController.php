@@ -13,32 +13,29 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $page = $request->input('page',1);
-        $rowsPerPage = $request->input('rowsPerPage',50);
-        $sortBy = $request->input('sortBy','id');
-        $descending = $request->boolean('descending',false);
-        $filters = json_decode($request->input('filters','{}'),true);
+        $page = $request->input('page', 1);
+        $rowsPerPage = $request->input('rowsPerPage', 50);
+        $sortBy = $request->input('sortBy', 'id');
+        $descending = $request->boolean('descending', false);
+        $filters = json_decode($request->input('filters', '{}'), true);
 
         $query = Product::query();
 
-        if(!empty($filters['query']))
-        {
+        if (!empty($filters['query'])) {
             $query->queryFilter($filters['query']);
         }
 
-        if (array_key_exists('status', $filters))
-        {
+        if (array_key_exists('status', $filters)) {
             $query->statusFilter($filters['status']);
         }
 
-        if (array_key_exists('featured', $filters))
-        {
+        if (array_key_exists('featured', $filters)) {
             $query->featuredFilter($filters['featured']);
         }
 
-        $query->orderBy($sortBy,$descending ? 'desc' : 'asc');
+        $query->orderBy($sortBy, $descending ? 'desc' : 'asc');
 
-        $products = $query->paginate($rowsPerPage,['*'], 'page', $page);
+        $products = $query->paginate($rowsPerPage, ['*'], 'page', $page);
 
         return ProductResource::collection($products);
     }
@@ -69,14 +66,12 @@ class ProductController extends Controller
             'status' => $request->status,
         ]);
 
-        if($request->hasFile('image'))
-        {
-            $product->uploadMedia($request->file('image'),'image','dorashop/products');
+        if ($request->hasFile('image')) {
+            $product->uploadMedia($request->file('image'), 'image', 'dorashop/products');
         }
 
-        if($request->hasFile('gallery'))
-        {
-            $product->uploadMultipleMedia($request->file('gallery'),'gallery','dorashop/products/gallery');
+        if ($request->hasFile('gallery')) {
+            $product->uploadMultipleMedia($request->file('gallery'), 'gallery', 'dorashop/products/gallery');
         }
 
         return new ProductResource($product->load('media'));
@@ -87,6 +82,21 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::query()->findOrFail($id);
+
+        return ProductResource::make($product);
+    }
+
+    public function productDetailsBySlug($slug)
+    {
+        $product = Product::query()
+            ->where('slug', $slug)
+            ->with(['media' => function ($query) {
+                $query->where('type', '!=', 'image');
+            },
+                'brand',
+                'category'
+            ])
+            ->first();
 
         return ProductResource::make($product);
     }
@@ -110,15 +120,13 @@ class ProductController extends Controller
             'status' => $request->status,
         ]);
 
-        if($request->hasFile('image'))
-        {
-            $product->replaceMedia($request->file('image'),'image','dorashop/products');
+        if ($request->hasFile('image')) {
+            $product->replaceMedia($request->file('image'), 'image', 'dorashop/products');
         }
 
-        if($request->hasFile('gallery'))
-        {
+        if ($request->hasFile('gallery')) {
             $product->deleteMedia('gallery');
-            $product->uploadMultipleMedia($request->file('gallery'),'gallery','dorashop/products/gallery');
+            $product->uploadMultipleMedia($request->file('gallery'), 'gallery', 'dorashop/products/gallery');
         }
 
         return response()->json([
@@ -136,7 +144,7 @@ class ProductController extends Controller
         $product->deleteMedia();
         $product->delete();
 
-        return response()->json(['message'=> 'Product deleted successfully']);
+        return response()->json(['message' => 'Product deleted successfully']);
     }
 
 }

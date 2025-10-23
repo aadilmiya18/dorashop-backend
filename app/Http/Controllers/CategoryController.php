@@ -145,7 +145,9 @@ class CategoryController extends Controller
 
         $children = $parent->children()
             ->where('status', 1)
-            ->with(['media', 'products.media'])
+            ->with(['media', 'products.media' => function ($query) {
+                $query->where('type','image');
+            }])
             ->get();
 
         // Merge all products from child categories into one collection
