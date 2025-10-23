@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         then: function () {
             Route::prefix('api/admin')
-                ->middleware(['api','auth:sanctum'])
+                ->middleware(['api'])
                 ->group(base_path('routes/admin.php'));
 
             Route::prefix('api/customer')

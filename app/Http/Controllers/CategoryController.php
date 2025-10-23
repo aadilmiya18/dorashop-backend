@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
+use App\Models\Product;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,27 +15,25 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        $page = $request->input('page',1);
-        $rowsPerPage = $request->input('rowsPerPage',50);
-        $sortBy = $request->input('sortBy','id');
-        $descending = $request->boolean('descending',false);
-        $filters = json_decode($request->input('filters','{}'),true);
+        $page = $request->input('page', 1);
+        $rowsPerPage = $request->input('rowsPerPage', 50);
+        $sortBy = $request->input('sortBy', 'id');
+        $descending = $request->boolean('descending', false);
+        $filters = json_decode($request->input('filters', '{}'), true);
 
         $query = Category::query();
 
-        if(!empty($filters['query']))
-        {
+        if (!empty($filters['query'])) {
             $query->queryFilter($filters['query']);
         }
 
-        if(array_key_exists('status',$filters))
-        {
+        if (array_key_exists('status', $filters)) {
             $query->statusFilter($filters['status']);
         }
 
-        $query->orderBy($sortBy,$descending ? 'desc' : 'asc');
+        $query->orderBy($sortBy, $descending ? 'desc' : 'asc');
 
-        $categories = $query->paginate($rowsPerPage,['*'],'page',$page);
+        $categories = $query->paginate($rowsPerPage, ['*'], 'page', $page);
 
         return CategoryResource::collection($categories);
     }
@@ -61,7 +60,7 @@ class CategoryController extends Controller
 
 
         if ($request->hasFile('image')) {
-            $category->uploadMedia($request->file('image'),'image','dorashop/categories');
+            $category->uploadMedia($request->file('image'), 'image', 'dorashop/categories');
         }
 
         return new CategoryResource($category);
@@ -89,7 +88,7 @@ class CategoryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $category->replaceMedia($request->file('image'),'image','dorashop/categories');
+            $category->replaceMedia($request->file('image'), 'image', 'dorashop/categories');
         }
 
         return response()->json([
@@ -107,7 +106,59 @@ class CategoryController extends Controller
         return response()->json([
             'message' => 'Category Deleted successfully'
         ]);
+    }
 
+    public function onlyParents()
+    {
+        $categories = Category::query()
+            ->where('parent_id', null)
+            ->get();
 
+        return CategoryResource::collection($categories);
+    }
+
+    public function categoryProducts(Request $request)
+    {
+        $slug = $request->query('slug');
+
+        $categories = Category::query()
+            ->with(['products.media' => function ($query) {
+                $query->where('type', 'image');
+            },
+                'children.media'
+            ])
+            ->where('slug', $slug)
+            ->where('status', 1)
+            ->firstOrFail();
+
+        return new CategoryResource($categories);
+    }
+
+    public function parentChildCategories(Request $request)
+    {
+        $slug = $request->query('slug');
+
+        $parent = Category::query()
+            ->where('slug', $slug)
+            ->where('status',1)
+            ->first();
+
+        $children = $parent->children()
+            ->where('status', 1)
+            ->with(['media', 'products.media'])
+            ->get();
+
+        // Merge all products from child categories into one collection
+        $allProducts = collect();
+        foreach ($children as $child) {
+            $allProducts = $allProducts->merge($child->products);
+        }
+
+        // Attach the combined products to the parent (not saved in DB)
+        $parent->setRelation('all_products', $allProducts);
+        $parent->setRelation('children', $children);
+
+        // Return as a single parent resource (with children + all products)
+        return new CategoryResource($parent);
     }
 }

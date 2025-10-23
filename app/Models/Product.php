@@ -31,6 +31,11 @@ class Product extends Model
         return $this->morphMany(Media::class,'mediable');
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class,'category_id');
+    }
+
     public function scopeQueryFilter($query, $search)
     {
         if(!$search) {
