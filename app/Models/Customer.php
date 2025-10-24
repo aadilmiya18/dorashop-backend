@@ -19,4 +19,10 @@ class Customer extends Model
     ];
 
     protected $hidden = ['password'];
+
+    public function cart()
+    {
+        return $this->hasOne(Cart::class)->where('status',1);
+    }
+
 }

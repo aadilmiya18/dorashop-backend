@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerAuthController;
 use Illuminate\Support\Facades\Route;
@@ -26,4 +27,11 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [CustomerAuthController::class, 'me']);
     Route::post('auth/logout', [CustomerAuthController::class, 'logoutUser']);
+
+    Route::controller(CartController::class)->prefix('carts')->group(function () {
+        Route::get('','index');
+        Route::post('add','store');
+        Route::delete('remove','destroy');
+    });
+
 });
