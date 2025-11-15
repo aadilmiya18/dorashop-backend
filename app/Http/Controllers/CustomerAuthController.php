@@ -76,4 +76,30 @@ class CustomerAuthController extends Controller
         ]);
     }
 
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'address' => 'sometimes|string|max:500',
+        ]);
+
+        $customer = auth()->user();
+
+        if ($request->has('name')) {
+            $customer->name = $request->name;
+        }
+
+        if ($request->has('address')) {
+            $customer->address = $request->address;
+        }
+
+        $customer->save();
+
+        return response()->json([
+            'message' => 'Profile Updated Successfully',
+            'user' => new CustomerResource($customer)
+        ]);
+
+    }
+
 }

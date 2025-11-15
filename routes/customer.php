@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\EsewaController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
@@ -23,22 +25,28 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
     Route::get('/{slug}', 'productDetailsBySlug');
 });
 
-
+Route::get('esewa/success', [CheckoutController::class, 'esewaSuccess']);
+Route::get('esewa/failure', [CheckoutController::class, 'esewaFailure']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [CustomerAuthController::class, 'me']);
     Route::post('auth/logout', [CustomerAuthController::class, 'logoutUser']);
+    Route::put('auth/update-profile', [CustomerAuthController::class, 'updateProfile']);
 
     Route::controller(CartController::class)->prefix('carts')->group(function () {
-        Route::get('','index');
-        Route::post('add','store');
-        Route::delete('remove','destroy');
+        Route::get('', 'index');
+        Route::post('add', 'store');
+        Route::delete('remove', 'destroy');
     });
 
     Route::controller(WishlistController::class)->prefix('wishlists')->group(function () {
-        Route::get('','index');
-        Route::post('add','store');
-        Route::delete('{id}/remove','destroy');
+        Route::get('', 'index');
+        Route::post('add', 'store');
+        Route::delete('{id}/remove', 'destroy');
     });
+
+    Route::post('/order/create', [CheckoutController::class, 'createOrder']);
+
+
 
 });
