@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 
@@ -32,6 +33,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('','index');
         Route::post('add','store');
         Route::delete('remove','destroy');
+    });
+
+    Route::controller(WishlistController::class)->prefix('wishlists')->group(function () {
+        Route::get('','index');
+        Route::post('add','store');
+        Route::delete('{id}/remove','destroy');
     });
 
 });
